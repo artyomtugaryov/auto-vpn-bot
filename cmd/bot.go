@@ -1,39 +1,28 @@
 package main
 
 import (
+	"flag"
+	"fmt"
 	"log"
-	"os"
-
-	tgbotwrap "github.com/artyomtugaryov/vpnbot/internal/tgbotwrap"
-
-	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 )
 
 func main() {
+	token := mustToken()
+	fmt.Println(token)
+	// tgClient = telegram.New(token)
+	// fetcher = fetcher.New(tgClient)
+	// processor = processor.New(tgClient)
+	// consumer.Start(fetcher, processor)
+}
 
-	token := os.Getenv("BOT_TOKEN")
+func mustToken() string {
+	token := flag.String("token", "", "Telegram token for access")
 
-	bot, err := tgbotapi.NewBotAPI(token)
-	if err != nil {
-		log.Panic(err)
+	flag.Parse()
+
+	if *token == "" {
+		log.Fatal("Token was not specified")
 	}
 
-	bot.Debug = true
-
-	log.Printf("Authorized on account %s", bot.Self.UserName)
-
-	updatesConfig := tgbotwrap.GetUpdatesConfig()
-
-	updates := bot.GetUpdatesChan(updatesConfig)
-
-	for update := range updates {
-		if update.Message != nil { // If we got a message
-			log.Printf("[%s] %s", update.Message.From.UserName, update.Message.Text)
-
-			msg := tgbotapi.NewMessage(update.Message.Chat.ID, update.Message.Text)
-			msg.ReplyToMessageID = update.Message.MessageID
-
-			bot.Send(msg)
-		}
-	}
+	return *token
 }
