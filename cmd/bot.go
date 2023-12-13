@@ -4,12 +4,13 @@ import (
 	"flag"
 	"fmt"
 	"log"
+
+	"github.com/artyomtugaryov/vpnbot/pkg/clients/telegram"
 )
 
 func main() {
-	token := mustToken()
-	fmt.Println(token)
-	// tgClient = telegram.New(token)
+	tgClient := telegram.New("api.telegram.org", mustToken())
+	fmt.Println(tgClient)
 	// fetcher = fetcher.New(tgClient)
 	// processor = processor.New(tgClient)
 	// consumer.Start(fetcher, processor)
