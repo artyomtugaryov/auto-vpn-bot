@@ -43,7 +43,7 @@ func New(basePath string) SQLiteStorage {
 
 func (s *SQLiteStorage) Initialize() error {
 	sqlStmt := `
-	create table if not exists customers (id integer not null primary key, username text);
+	create table if not exists customers (id integer not null primary key, username text, active bool);
 	create table if not exists messages (id integer not null primary key, messsage text);
 	`
 	if _, err := s.database.Exec(sqlStmt); err != nil {
@@ -62,7 +62,7 @@ func (s *SQLiteStorage) SaveCusromer(customer *storage.Customer) error {
 		return errors.Wrap("Cannot save a customer", err)
 	}
 	sqlStmt := `
-	insert into customers(username) values(?);
+	insert into customers(username, active) VALUES(?, ?);
 	`
 	stmt, err := tx.Prepare(sqlStmt)
 	if err != nil {
@@ -71,11 +71,44 @@ func (s *SQLiteStorage) SaveCusromer(customer *storage.Customer) error {
 
 	defer stmt.Close()
 
-	if _, err = stmt.Exec(customer.Username); err != nil {
+	if _, err = stmt.Exec(customer.Username, customer.Active); err != nil {
 		return errors.Wrap("Cannot save a customer", err)
 	}
 	if err = tx.Commit(); err != nil {
 		return errors.Wrap("Cannot save a customer", err)
+	}
+	return nil
+}
+
+func (s *SQLiteStorage) DisableCusromer(customer *storage.Customer) error {
+	return s.setActiveForCusromer(customer.Username, false)
+}
+
+func (s *SQLiteStorage) EnableCusromer(customer *storage.Customer) error {
+	return s.setActiveForCusromer(customer.Username, true)
+}
+
+func (s *SQLiteStorage) setActiveForCusromer(customerName string, activate bool) error {
+	tx, err := s.database.Begin()
+	if err != nil {
+		return errors.Wrap("Cannot update the customer", err)
+	}
+	sqlStmt := `
+	UPDATE customers
+	SET active=?
+	WHERE username=?;
+	`
+	stmt, err := tx.Prepare(sqlStmt)
+	if err != nil {
+		return errors.Wrap("Cannot update the customer", err)
+	}
+
+	defer stmt.Close()
+	if _, err = stmt.Exec(customerName, activate); err != nil {
+		return errors.Wrap("Cannot update the customer", err)
+	}
+	if err = tx.Commit(); err != nil {
+		return errors.Wrap("Cannot update the customer", err)
 	}
 	return nil
 }

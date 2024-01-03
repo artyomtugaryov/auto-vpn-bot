@@ -6,6 +6,7 @@ import (
 	"log"
 
 	"github.com/artyomtugaryov/vpnbot/pkg/storage"
+
 	sqlite_storage "github.com/artyomtugaryov/vpnbot/pkg/storage/sqlite"
 )
 
@@ -16,8 +17,13 @@ func main() {
 	customer := storage.Customer{
 		Username: "artyomtugaryov",
 	}
-	err := dataStorage.SaveCusromer(&customer)
-	fmt.Println(err)
+
+	if err := dataStorage.SaveCusromer(&customer); err != nil {
+		panic(err)
+	}
+	if err := dataStorage.DisableCusromer(&customer); err != nil {
+		panic(err)
+	}
 
 	// fetcher = fetcher.New(tgClient)
 	// processor = processor.New(tgClient)
