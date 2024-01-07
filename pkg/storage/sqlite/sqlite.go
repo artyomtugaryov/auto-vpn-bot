@@ -5,7 +5,7 @@ import (
 	"log"
 	"path/filepath"
 
-	"github.com/artyomtugaryov/vpnbot/pkg/storage"
+	"github.com/artyomtugaryov/vpnbot/pkg/entities"
 	"github.com/artyomtugaryov/vpnbot/pkg/utils"
 	"github.com/artyomtugaryov/vpnbot/pkg/utils/errors"
 	_ "github.com/mattn/go-sqlite3"
@@ -16,17 +16,18 @@ type SQLiteStorage struct {
 }
 
 const (
-	filename = "database.db"
+	filename   = "database.db"
+	driverName = "sqlite3"
 )
 
-func New(basePath string) SQLiteStorage {
+func New(basePath string) *SQLiteStorage {
 
 	if err := utils.MkDir(basePath); err != nil {
 		log.Fatal(err)
 	}
 
 	databasePath := filepath.Join(basePath, filename)
-	database, err := sql.Open("sqlite3", databasePath)
+	database, err := sql.Open(driverName, databasePath)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -38,7 +39,7 @@ func New(basePath string) SQLiteStorage {
 	if err := storage.Initialize(); err != nil {
 		log.Fatal(err)
 	}
-	return storage
+	return &storage
 }
 
 func (s *SQLiteStorage) Initialize() error {
@@ -56,7 +57,7 @@ func (s *SQLiteStorage) Close() error {
 	return s.database.Close()
 }
 
-func (s *SQLiteStorage) SaveCusromer(customer *storage.Customer) error {
+func (s *SQLiteStorage) SaveCusromer(customer *entities.Customer) error {
 	tx, err := s.database.Begin()
 	if err != nil {
 		return errors.Wrap("Cannot save a customer", err)
@@ -80,11 +81,11 @@ func (s *SQLiteStorage) SaveCusromer(customer *storage.Customer) error {
 	return nil
 }
 
-func (s *SQLiteStorage) DisableCusromer(customer *storage.Customer) error {
+func (s *SQLiteStorage) DisableCusromer(customer *entities.Customer) error {
 	return s.setActiveForCusromer(customer.Username, false)
 }
 
-func (s *SQLiteStorage) EnableCusromer(customer *storage.Customer) error {
+func (s *SQLiteStorage) EnableCusromer(customer *entities.Customer) error {
 	return s.setActiveForCusromer(customer.Username, true)
 }
 

@@ -1,9 +1,12 @@
 package storage
 
+import "github.com/artyomtugaryov/vpnbot/pkg/entities"
+
 type Storage interface {
 	Initialize() error
+	Close() error
 	// Customer methods
-	SaveCusromer(customer *Customer) error
-	DisableCusromer(customer *Customer) error
-	EnableCusromer(customer *Customer) error
+	SaveCusromer(customer *entities.Customer) error
+	DisableCusromer(customer *entities.Customer) error
+	EnableCusromer(customer *entities.Customer) error
 }
